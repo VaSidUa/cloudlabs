@@ -1,0 +1,12 @@
+{
+  "name": "lr1-cinema",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lr1-db",
+      "database_id": "044acdf3-0830-49a8-b8cc-771b3e9da1d1"
+    }
+  ]
+}

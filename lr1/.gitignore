@@ -1,0 +1,6 @@
+node_modules/
+.wrangler/
+.dev.vars*
+.env*
+# великий набір для виміру читань: генерується командою node seed.mjs 2000 seed-big.sql
+seed-big.sql
