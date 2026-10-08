@@ -1,6 +1,6 @@
 # ЛР1, варіант В06 «Кінотеатр»
 
-- Адреса API: `https://<назва>.<субдомен>.workers.dev` (вписати після `npm run deploy`)
+- Адреса API: `https://lr1-cinema.vasid1304-4a1.workers.dev`
 - Платформа: Cloudflare Workers + Cloudflare D1; мова: JavaScript
 - Параметри варіанта: 12 фільмів, пагінація з курсором, 25 записів на сторінці, метод `DELETE`, `Cache-Control: max-age=0`
 - Читати може будь-хто, записувати (`POST`, `DELETE`) лише з `Authorization: Bearer <ADMIN_TOKEN>`
@@ -47,7 +47,7 @@
 
 ## Запуск
 
-```
+```cmd
 npm install
 npx wrangler login
 node make-dev-vars.mjs            # створює .dev.vars з ADMIN_TOKEN (у git не потрапляє)
@@ -60,6 +60,5 @@ npx wrangler d1 create lr1-db     # database_id вписати в wrangler.jsonc
 npm run db:remote
 npm run deploy
 npx wrangler secret bulk .dev.vars
-npm run check -- https://<назва>.<субдомен>.workers.dev
-node measure.mjs https://<назва>.<субдомен>.workers.dev 1
-```
+npm run check -- [https://lr1-cinema.vasid1304-4a1.workers.dev](https://lr1-cinema.vasid1304-4a1.workers.dev)
+node measure.mjs [https://lr1-cinema.vasid1304-4a1.workers.dev](https://lr1-cinema.vasid1304-4a1.workers.dev) 1
