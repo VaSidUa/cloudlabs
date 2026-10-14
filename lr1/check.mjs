@@ -1,8 +1,3 @@
-// Перевірка всіх маршрутів API: npm run check -- <адреса>, наприклад npm run check -- http://localhost:8787
-// (це node --env-file=.dev.vars check.mjs: маркер запису ADMIN_TOKEN береться з .dev.vars).
-// Кожен запит порівнюється з очікуваним результатом; наприкінці друкується, скільки перевірок
-// не пройшло, і скрипт завершується з кодом 1, якщо хоч одна не пройшла. Вивід іде у звіт.
-
 // ---------------------------------------------------------------------------------------------
 // Налаштування під свій варіант. Змінюється лише цей блок.
 // ---------------------------------------------------------------------------------------------
@@ -36,9 +31,9 @@ const CONFIG = {
 
 const BASE = (process.argv[2] ?? "http://localhost:8787").replace(/\/$/, "");
 const R = CONFIG.resource;
-const TOKEN = process.env.ADMIN_TOKEN;      // маркер запису; без нього запис має дати 401
+const TOKEN = process.env.ADMIN_TOKEN;      
 const SHOWN_HEADERS = ["cache-control", "location", "x-read-count", "allow"];
-const AGG_TOLERANCE = 0.01;                 // агрегат в API округлений до сотих
+const AGG_TOLERANCE = 0.01;              
 
 let failed = 0, total = 0;
 
@@ -48,7 +43,6 @@ async function call(method, path, body, expectStatus, check, auth = TOKEN ? `Bea
   const res = await fetch(BASE + encodeURI(path), { method, headers, body: body ? JSON.stringify(body) : undefined });
   const text = await res.text();
   const shown = SHOWN_HEADERS.filter((h) => res.headers.has(h)).map((h) => `${h}: ${res.headers.get(h)}`);
-  // Не JSON (наприклад, HTML-сторінка Cloudflare в перші хвилини після першого розгортання): лише друкується.
   const isJson = res.headers.get("content-type")?.includes("application/json");
   const data = isJson ? JSON.parse(text) : null;
   const problems = [];
@@ -65,7 +59,6 @@ async function call(method, path, body, expectStatus, check, auth = TOKEN ? `Bea
 }
 
 // Запит 1 посторінково: кожен запис проходить фільтр, сторінка не більша за limit, жодного запису
-// двічі, порядок за полем сортування (за однакових значень — за id) не порушено між сторінками.
 const seen = [];
 const before = (a, b) => (a[CONFIG.sortField] === b[CONFIG.sortField]
   ? (CONFIG.sortDir === "asc" ? a.id <= b.id : a.id >= b.id)
@@ -101,8 +94,6 @@ await call("GET", `${R}/stats?${CONFIG.stats ?? CONFIG.filter}`, null, 200, (d) 
   return out;
 });
 
-// Передумова: щонайменше MIN_MATCHING записів проходять фільтр і два з них мають однакове значення поля
-// сортування. Інакше порядок за id і вартість сторінок (measure.mjs) перевірити нема на чому.
 const MIN_MATCHING = 4;
 const hasTie = seen.some((it, i) => i > 0 && it[CONFIG.sortField] === seen[i - 1][CONFIG.sortField]);
 total++;
@@ -114,10 +105,10 @@ if (seen.length < MIN_MATCHING || !hasTie) {
 } else console.log(`
 ок  початкові дані: запит 1 повернув ${seen.length} записів, є однакові значення ${CONFIG.sortField}`);
 
-// Запис без маркера, з чужим маркером і без схеми Bearer: 401 для всіх дозволених методів запису.
+
 await call("POST", R, CONFIG.newItem, 401, null, "");
 await call("POST", R, CONFIG.newItem, 401, null, "Bearer not-the-token");
-if (TOKEN) await call("POST", R, CONFIG.newItem, 401, null, TOKEN);             // маркер без «Bearer»
+if (TOKEN) await call("POST", R, CONFIG.newItem, 401, null, TOKEN);             
 for (const m of CONFIG.mutations) await call(m, `${R}/1`, m === "PATCH" ? CONFIG.patch : null, 401, null, "");
 
 if (!TOKEN) { console.log("\nADMIN_TOKEN не задано: запустіть через npm run check -- <адреса>"); process.exit(1); }
@@ -140,15 +131,14 @@ if (CONFIG.mutations.includes("DELETE")) {
   await call("GET", `${R}/${id}`, null, 404);
   await call("GET", `${R}/${id}/${CONFIG.child}`, null, 404);
 }
-// Методи, яких немає в картці: 405 незалежно від маркера.
+
 for (const m of CONFIG.removed) await call(m, `${R}/${id}`, m === "PATCH" ? CONFIG.patch : null, 405);
 
-// Помилкові запити: очікуються коди 400, 404 і 405.
-await call("POST", R, { ...CONFIG.newItem, colour: "red" }, 400);                          // невідоме поле
-await call("POST", R, { ...CONFIG.newItem, [CONFIG.badDate[0]]: CONFIG.badDate[1] }, 400);   // неіснуюча дата
-await call("POST", R, { constructor: 1 }, 400);                                             // успадковане ім'я поля
-await call("GET", `${R}?${CONFIG.filter}&limit=`, null, 400);                                // порожній limit
-if (CONFIG.pagination === "cursor") await call("GET", `${R}?${CONFIG.filter}&cursor=WzEsbnVsbF0`, null, 400);  // [1,null]
+await call("POST", R, { ...CONFIG.newItem, colour: "red" }, 400);                         
+await call("POST", R, { ...CONFIG.newItem, [CONFIG.badDate[0]]: CONFIG.badDate[1] }, 400);  
+await call("POST", R, { constructor: 1 }, 400);                                             
+await call("GET", `${R}?${CONFIG.filter}&limit=`, null, 400);                                
+if (CONFIG.pagination === "cursor") await call("GET", `${R}?${CONFIG.filter}&cursor=WzEsbnVsbF0`, null, 400);  
 await call("GET", `${R}/1/${CONFIG.child}?${CONFIG.badChildFilter}`, null, 400);
 await call("GET", `${R}/999999`, null, 404);
 await call("PUT", `${R}/1`, { code: "X" }, 405);

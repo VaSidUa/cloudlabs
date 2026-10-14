@@ -1,9 +1,8 @@
-// Генератор початкових записів: SEED_ROWS фільмів, у кожного від MIN_CHILDREN до MAX_CHILDREN сеансів.
+
 const MIN_CHILDREN = 2;          // дочірніх записів щонайменше (з таблиці варіантів)
 const MAX_CHILDREN = 4;
 const SEED = 2026;               // зерно генератора: ті самі записи при кожному запуску
 
-// Генератор псевдовипадкових чисел mulberry32: Math.random не приймає зерна.
 function mulberry32(a) {
   return () => {
     a |= 0; a = (a + 0x6d2b79f5) | 0;
@@ -13,8 +12,7 @@ function mulberry32(a) {
   };
 }
 
-// Реальні фільми з дійсними (приблизними) даними: тривалість, дата прем'єри в США, рейтинг глядачів
-// близький до IMDb. Жанр обмежений переліком варіанта: драма, комедія, анімація, документальний.
+
 const FILMS = [
   { title: "Inception",                 genre: "драма",   duration_min: 148, age_rating: "12+", premiere_on: "2010-07-16", rating: 8.8 },
   { title: "Interstellar",              genre: "драма",   duration_min: 169, age_rating: "12+", premiere_on: "2014-11-07", rating: 8.7 },
@@ -32,10 +30,6 @@ const FILMS = [
 const QUERY1_GENRE = "драма";        // значення фільтра запиту 1, з яким працюють check.mjs і measure.mjs
 const QUERY1_AFTER = "2005-01-01";   // дата фільтра запиту 1: прем'єра після неї
 
-// Повертає масив фільмів; у кожного поле screenings з масивом сеансів. Перші 12 записів це FILMS,
-// для більшої кількості (node seed.mjs 200, вимір читань) список повторюється з номером у назві.
-// У запиті 1 (драма, прем'єра після 2005-01-01) шість фільмів, серед них дві пари з однаковим рейтингом
-// (8.5 і 8.0); драми до 2005 року, комедії не проходять фільтр.
 export function generate(count) {
   const rnd = mulberry32(SEED);
   const between = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1));

@@ -10,9 +10,9 @@
 | Маршрут | Методи | Призначення |
 |---|---|---|
 | `/api/films` | GET, POST | запит 1 (GET), створення фільму |
+| `/api/films/stats` | GET | запит 2 (важливо оголошувати до `/api/films/:id`) |
 | `/api/films/:id` | GET, DELETE | фільм; видалення разом із сеансами (`ON DELETE CASCADE`); `PATCH` і `PUT` дають 405 |
 | `/api/films/:id/screenings` | GET, POST | запит 3 (GET), додавання сеансу |
-| `/api/films/stats` | GET | запит 2 |
 
 ## Запит 1: фільми жанру з прем'єрою після дати
 
@@ -60,5 +60,5 @@ npx wrangler d1 create lr1-db     # database_id вписати в wrangler.jsonc
 npm run db:remote
 npm run deploy
 npx wrangler secret bulk .dev.vars
-npm run check -- [https://lr1-cinema.vasid1304-4a1.workers.dev](https://lr1-cinema.vasid1304-4a1.workers.dev)
-node measure.mjs [https://lr1-cinema.vasid1304-4a1.workers.dev](https://lr1-cinema.vasid1304-4a1.workers.dev) 1
+npm run check -- https://lr1-cinema.vasid1304-4a1.workers.dev
+node measure.mjs https://lr1-cinema.vasid1304-4a1.workers.dev 1

@@ -5,7 +5,7 @@ import * as db from "./db-d1.js";
 const PAGE_SIZE = 25;            // записів на сторінці за замовчуванням (з таблиці варіантів)
 const MAX_PAGE_SIZE = 100;       // більше за один запит не віддаємо
 const MAX_OFFSET = 100000;       // найбільший зсув; далі сторінки зі зсувом надто дорогі
-const PAGINATION = "cursor";     // "offset" або "cursor" (з таблиці варіантів)
+const PAGINATION = "cursor";  // "offset" або "cursor" (з таблиці варіантів)
 const SORT_FIELD = "rating";   // поле сортування запиту 1; з нього будується курсор
 const CACHE_MAX_AGE = 0;         // секунд для Cache-Control на GET (з таблиці варіантів)
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;   // id D1 є числами, Firestore рядками

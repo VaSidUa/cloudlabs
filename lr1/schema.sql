@@ -1,4 +1,3 @@
--- Схема бази В06: основна сутність films і дочірня screenings. Повторний запуск створює таблиці заново.
 DROP TABLE IF EXISTS screenings;
 DROP TABLE IF EXISTS films;
 
@@ -21,10 +20,7 @@ CREATE TABLE screenings (
   price     REAL    NOT NULL CHECK (price BETWEEN 50 AND 600)
 );
 
--- Індекс під запит 1: рівність за genre, далі порядок сортування (rating, id); premiere_on у кінці,
--- щоб умову за датою перевірити в індексі, не читаючи рядок таблиці.
+
 CREATE INDEX idx_films_q1 ON films (genre, rating, id, premiere_on);
--- Індекс під запит 2: фільми одного вікового обмеження (rating у індексі для середнього).
 CREATE INDEX idx_films_age ON films (age_rating, rating);
--- Індекс під запит 3: сеанси одного фільму за часом початку; sold у індексі для умови.
 CREATE INDEX idx_screenings_film ON screenings (film_id, starts_at, id, sold);
