@@ -1,22 +1,71 @@
-// Записує початкові дані в seed.sql для D1: node seed.mjs [кількість] [файл].
-import { writeFileSync } from "node:fs";
+// Записує початкові дані через HTTP API (щоб сервер призначив owner_uid).
 import { generate } from "./seed-data.mjs";
 
-const SEED_ROWS = Number(process.argv[2] ?? 12);   // записів основної сутності (з таблиці варіантів)
-const OUT_FILE = process.argv[3] ?? "seed.sql";
+const API_URL = process.argv[2];
+const SEED_ROWS = Number(process.argv[3] ?? 12);
 
-const q = (s) => `'${String(s).replaceAll("'", "''")}'`;   // рядок SQL з екрануванням лапок
-const lines = ["DELETE FROM screenings;", "DELETE FROM films;"];
-let screeningId = 0;
-generate(SEED_ROWS).forEach((f, i) => {
-  const id = i + 1;               // явні id: за ними сеанси посилаються на фільм
-  lines.push(`INSERT INTO films (id, title, genre, duration_min, age_rating, premiere_on, rating) ` +
-    `VALUES (${id}, ${q(f.title)}, ${q(f.genre)}, ${f.duration_min}, ${q(f.age_rating)}, ${q(f.premiere_on)}, ${f.rating});`);
-  for (const s of f.screenings) {
-    lines.push(`INSERT INTO screenings (id, film_id, starts_at, hall, sold, price) ` +
-      `VALUES (${++screeningId}, ${id}, ${q(s.starts_at)}, ${s.hall}, ${s.sold}, ${s.price});`);
+if (!API_URL) {
+  console.error("Вкажіть адресу API: node seed.mjs http://localhost:8787 12");
+  process.exit(1);
+}
+
+const token = process.env.ID_TOKEN;
+if (!token) {
+  console.error("Помилка: ID_TOKEN не задано. Виконайте $env:ID_TOKEN = Get-Clipboard");
+  process.exit(1);
+}
+
+const headers = {
+  "content-type": "application/json",
+  authorization: `Bearer ${token}`
+};
+
+const films = generate(SEED_ROWS);
+console.log(`Створення ${SEED_ROWS} фільмів через API...`);
+
+for (const f of films) {
+  // 1. Создаем сам фильм
+  const filmBody = {
+    title: f.title,
+    genre: f.genre,
+    duration_min: f.duration_min,
+    age_rating: f.age_rating,
+    premiere_on: f.premiere_on,
+    rating: f.rating
+  };
+
+  const res = await fetch(`${API_URL}/api/films`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(filmBody)
+  });
+
+  if (!res.ok) {
+    console.error(`Помилка створення фільму "${f.title}":`, res.status, await res.text());
+    continue;
   }
-});
-// Файл пишеться напряму: перенаправлення «>» у Windows PowerShell 5.1 дає UTF-16, який wrangler не читає.
-writeFileSync(OUT_FILE, lines.join("\n") + "\n", "utf8");
-console.log(`${OUT_FILE}: ${SEED_ROWS} фільмів, ${screeningId} сеансів`);
+
+  const film = await res.json();
+
+  // 2. Создаем сеансы для этого фильма
+  for (const s of f.screenings) {
+    const screeningBody = {
+      starts_at: s.starts_at,
+      hall: s.hall,
+      sold: s.sold,
+      price: s.price
+    };
+
+    const sRes = await fetch(`${API_URL}/api/films/${film.id}/screenings`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(screeningBody)
+    });
+
+    if (!sRes.ok) {
+      console.error(`Помилка створення сеансу для "${f.title}":`, sRes.status, await sRes.text());
+    }
+  }
+}
+
+console.log(`Готово! Створено ${SEED_ROWS} фільмів.`);

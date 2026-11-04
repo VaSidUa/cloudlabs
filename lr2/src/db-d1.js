@@ -40,12 +40,12 @@ export async function getFilm(env, id) {
   return toApi(await env.DB.prepare("SELECT * FROM films WHERE id = ?").bind(asId(id)).first());
 }
 
-export async function createFilm(env, data) {
+export async function createFilm(env, data, uid) {
   const d = toDb(data);
   return toApi(await env.DB.prepare(
-    `INSERT INTO films (title, genre, duration_min, age_rating, premiere_on, rating)
-     VALUES (?, ?, ?, ?, ?, ?) RETURNING *`)
-    .bind(d.title, d.genre, d.duration_min, d.age_rating, d.premiere_on, d.rating).first());
+    `INSERT INTO films (title, genre, duration_min, age_rating, premiere_on, rating, owner_uid) 
+     VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`
+  ).bind(d.title, d.genre, d.duration_min, d.age_rating, d.premiere_on, d.rating, uid).first());
 }
 
 // DELETE: сеанси фільму видаляє ON DELETE CASCADE зі schema.sql.

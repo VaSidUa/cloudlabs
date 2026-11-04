@@ -1,0 +1,1 @@
+ALTER TABLE films ADD COLUMN owner_uid TEXT;
