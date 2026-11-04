@@ -1,0 +1,15 @@
+{
+  "name": "lr1-cinema",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:local": "wrangler d1 execute lr1-db --local --file=schema.sql && wrangler d1 execute lr1-db --local --file=seed.sql",
+    "db:remote": "wrangler d1 execute lr1-db --remote --file=schema.sql && wrangler d1 execute lr1-db --remote --file=seed.sql",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "node --env-file=.dev.vars check.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.145.0"
+  }
+}
