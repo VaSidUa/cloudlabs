@@ -1,10 +1,12 @@
-# ЛР2: Безсерверний HTTP API з керованою базою даних
+# ЛР3: HTTP API на контейнері Render
 
-- Адреса API: https://lr1-cinema.vasid1304-4a1.workers.dev
-- Сторінка входу: https://lr1-cinema.vasid1304-4a1.workers.dev/login
-- Платформа: Cloudflare Workers + Cloudflare D1
-- Мова: JavaScript
-- Модель доступу: **Власник + публічне читання (owner_public)**
+- **Адреса API на Render (контейнер)**: https://cloudlabs.onrender.com
+- **Сторінка входу (Render)**: https://cloudlabs.onrender.com/login
+- **Адреса API (Cloudflare Worker з ЛР2)**: https://lr1-cinema.vasid1304-4a1.workers.dev
+- **Платформа**: Render (Docker, distroless) / Cloudflare Workers
+- **База даних**: SQLite (файл у контейнері) / Cloudflare D1
+- **Мова**: JavaScript (Node.js)
+- **Модель доступу**: **Власник + публічне читання (owner_public)**
 
 ## Аутентифікація
 API використовує Firebase Authentication. Запити на зміну даних (POST, DELETE) повинні містити заголовок `Authorization: Bearer <ID_TOKEN>`.
@@ -22,3 +24,8 @@ API використовує Firebase Authentication. Запити на змін
 | POST | /api/films/:id/screenings | 401 | 201 | 403 |
 
 *(Примітка: у моделі owner_public модератора немає, тому колонка для нього відсутня).*
+
+## Запуск локально (як процес Node.js)
+Запуск адаптера, який перетворює код Worker у звичайний HTTP-сервер:
+```bash
+node --env-file=config.env --env-file=.dev.vars server.mjs
