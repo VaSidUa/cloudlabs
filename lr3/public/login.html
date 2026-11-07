@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вхід — API кінотеатру</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; }
+    textarea, input { width: 100%; box-sizing: border-box; font-family: monospace; }
+    pre { background: #f3f3f3; padding: .5rem; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>Вхід</h1>
+  <button id="signin">Увійти через Google</button>
+  <button id="signout" hidden>Вийти</button>
+  <p>uid: <b id="uid">—</b><br>email: <b id="email">—</b></p>
+  <p>Токен ідентичності (ID token) <button id="copy" disabled>Копіювати</button></p>
+  <textarea id="token" rows="6" readonly></textarea>
+  <p>Запит GET з токеном:</p>
+  <!-- Здесь указан путь для вашего Запроса 1 -->
+  <input id="path" value="/api/films?genre=драма&after=2005-01-01&limit=2">
+  <button id="call" disabled>Викликати API</button>
+  <pre id="out"></pre>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjubcjrakmEMurFxm2PjOsEknTC2h1QT0",
+      authDomain: "lr2-cinema.firebaseapp.com",
+      projectId: "lr2-cinema",
+    };
+
+    const auth = getAuth(initializeApp(firebaseConfig));
+    const $ = (id) => document.getElementById(id);
+
+    $("signin").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch((e) => ($("out").textContent = e.message));
+    $("signout").onclick = () => signOut(auth);
+    $("copy").onclick = () => navigator.clipboard.writeText($("token").value);
+
+    onAuthStateChanged(auth, async (user) => {
+      $("uid").textContent = user?.uid ?? "—";
+      $("email").textContent = user?.email ?? "—";
+      $("token").value = user ? await user.getIdToken() : "";
+      $("signin").hidden = !!user;
+      $("signout").hidden = !user;
+      $("copy").disabled = $("call").disabled = !user;
+    });
+
+    $("call").onclick = async () => {
+      const r = await fetch($("path").value, { headers: { authorization: `Bearer ${await auth.currentUser.getIdToken()}` } });
+      $("out").textContent = `${r.status} cache-control: ${r.headers.get("cache-control")}\n${await r.text()}`;
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Файли й каталоги, яких git не додає в репозиторій.
+# пакети Node.js: відновлюються командою npm install
+node_modules/
+# локальна копія бази даних і тимчасові файли Wrangler
+.wrangler/
+# секрети
+.dev.vars
+# паролі тестових користувачів check2.mjs
+.test-users.json
+# скомпільовані файли Python
+__pycache__/
+# ЛР3: локальна база SQLite адаптера (node server.mjs, python server.py)
+data/
